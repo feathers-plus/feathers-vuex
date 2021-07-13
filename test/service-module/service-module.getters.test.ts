@@ -351,6 +351,45 @@ describe('Service Module - Getters', function () {
     assert(results.total === 1, 'total was correct')
   })
 
+  it('find with paramsForServer option with specific value as string', function () {
+    const { state } = this
+    state.paramsForServer = [['_$client', '1']]
+    const params = { query: { test: false, _$client: '1' } }
+    const results = find(state)(params)
+
+    assert(results.data.length === 1, 'the length was correct')
+    assert(results.data[0]._id === 3, 'the correct record was returned')
+    assert(results.limit === 0, 'limit was correct')
+    assert(results.skip === 0, 'skip was correct')
+    assert(results.total === 1, 'total was correct')
+  })
+
+  it('find with paramsForServer option with specific value as number', function () {
+    const { state } = this
+    state.paramsForServer = [['_$client', -1]]
+    const params = { query: { test: false, _$client: -1 } }
+    const results = find(state)(params)
+
+    assert(results.data.length === 1, 'the length was correct')
+    assert(results.data[0]._id === 3, 'the correct record was returned')
+    assert(results.limit === 0, 'limit was correct')
+    assert(results.skip === 0, 'skip was correct')
+    assert(results.total === 1, 'total was correct')
+  })
+
+  it('find with paramsForServer option with specific value as function', function () {
+    const { state } = this
+    state.paramsForServer = [['_$client', value => value === 1]]
+    const params = { query: { test: false, _$client: 1 } }
+    const results = find(state)(params)
+
+    assert(results.data.length === 1, 'the length was correct')
+    assert(results.data[0]._id === 3, 'the correct record was returned')
+    assert(results.limit === 0, 'limit was correct')
+    assert(results.skip === 0, 'skip was correct')
+    assert(results.total === 1, 'total was correct')
+  })
+
   it('find with non-whitelisted custom operator fails', function () {
     const { state } = this
     const params = { query: { $client: 'test' } }

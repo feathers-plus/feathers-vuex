@@ -42,7 +42,32 @@ export default function makeServiceGetters() {
         idField,
         tempsById
       } = state
-      const q = _omit(params.query || {}, paramsForServer)
+
+      const paramsForServerByValue = paramsForServer.filter(el =>
+        Array.isArray(el)
+      )
+
+      const q = paramsForServerByValue.reduce(
+        (acc, [key, valueOrPredicate]) => {
+          if (!acc[key] || (acc[key] && !valueOrPredicate)) return acc
+
+          if (
+            ((typeof valueOrPredicate === 'string' ||
+              typeof valueOrPredicate === 'number') &&
+              acc[key] === valueOrPredicate) ||
+            (typeof valueOrPredicate === 'function' &&
+              valueOrPredicate(acc[key]))
+          ) {
+            return _omit(acc, key)
+          }
+
+          return acc
+        },
+        _omit(
+          params.query || {},
+          paramsForServer.filter(el => typeof el === 'string')
+        )
+      )
 
       const { query, filters } = filterQuery(q, {
         operators: additionalOperators.concat(whitelist)
@@ -114,14 +139,22 @@ export default function makeServiceGetters() {
       return copiesById[id]
     },
 
-    isCreatePendingById: ({ isIdCreatePending }: ServiceState) => (id: Id) =>
-      isIdCreatePending.includes(id),
-    isUpdatePendingById: ({ isIdUpdatePending }: ServiceState) => (id: Id) =>
-      isIdUpdatePending.includes(id),
-    isPatchPendingById: ({ isIdPatchPending }: ServiceState) => (id: Id) =>
-      isIdPatchPending.includes(id),
-    isRemovePendingById: ({ isIdRemovePending }: ServiceState) => (id: Id) =>
-      isIdRemovePending.includes(id),
+    isCreatePendingById:
+      ({ isIdCreatePending }: ServiceState) =>
+      (id: Id) =>
+        isIdCreatePending.includes(id),
+    isUpdatePendingById:
+      ({ isIdUpdatePending }: ServiceState) =>
+      (id: Id) =>
+        isIdUpdatePending.includes(id),
+    isPatchPendingById:
+      ({ isIdPatchPending }: ServiceState) =>
+      (id: Id) =>
+        isIdPatchPending.includes(id),
+    isRemovePendingById:
+      ({ isIdRemovePending }: ServiceState) =>
+      (id: Id) =>
+        isIdRemovePending.includes(id),
     isSavePendingById: (state: ServiceState, getters) => (id: Id) =>
       getters.isCreatePendingById(id) ||
       getters.isUpdatePendingById(id) ||
